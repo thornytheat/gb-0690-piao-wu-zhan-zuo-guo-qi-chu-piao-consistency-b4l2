@@ -13,7 +13,7 @@ def normalize(row,end):
     v=number(row['version'])
     if v<1 or v!=v.to_integral():raise DomainError('RANGE','版本须为正整数')
     out['version']=int(v)
-    if row['type'] not in ('hold','release','pay','issue'):raise DomainError('STATE','事件类型不支持')
+    if row['type'] not in ('hold','release','pay','issue','voucher'):raise DomainError('STATE','事件类型不支持')
     out['expires']=instant(row['expires']) if row['type']=='hold' else None
     if out['expires'] and out['expires']<=out['time']:raise DomainError('RANGE','租约到期早于占座')
     return out

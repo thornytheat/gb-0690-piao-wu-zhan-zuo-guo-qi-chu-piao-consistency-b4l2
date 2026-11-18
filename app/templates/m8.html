@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% block content %}<div class="console-grid">
+<section class="panel wide"><div class="panel__head"><h2>入账台账</h2><span>同键幂等 · 中断可恢复</span>
+<button id="post-sync" class="button primary" data-run="{{result.manifest.run_id}}">SYNC / 入账重试</button></div>
+{% if ledger %}
+{{rows(ledger,['ordinal','direction','channel','kind','amount','ref_id','state'])}}
+{% else %}
+{{rows(result.posting_entries,['ordinal','direction','channel','kind','amount','ref_id','state'])}}
+{% endif %}
+</section>
+<section class="panel"><div class="panel__head"><h2>入账日志</h2><span>JOURNAL</span></div>
+{% if journal %}
+{{rows(journal,['entry_key','attempt','status','detail'])}}
+{% else %}<p style="padding:14px;font-size:10px;color:var(--ink-muted)">尚未入账，点击 SYNC 后在此查看幂等与恢复记录。</p>{% endif %}
+</section>
+<section class="panel"><div class="panel__head"><h2>待核 / 已归属支付</h2></div>
+{{rows(result.payments,['id','order','seat','sale_channel','pay_channel','state','attribution','voucher','amount'])}}
+</section>
+</div>
+<script>
+document.querySelector('#post-sync')?.addEventListener('click',async e=>{
+  const btn=e.target;btn.disabled=true;const fb=document.querySelector('#feedback');
+  try{const res=await fetch('/api/posting/'+btn.dataset.run+'/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+  const data=await res.json();if(!res.ok)throw Error(data.message);
+  fb.textContent='本次入账 '+data.applied+' 笔，台账共 '+data.ledger.length+' 条（重试不重复记账）';location.reload();
+  }catch(err){fb.textContent=err.message;}finally{btn.disabled=false;}
+});
+</script>{% endblock %}

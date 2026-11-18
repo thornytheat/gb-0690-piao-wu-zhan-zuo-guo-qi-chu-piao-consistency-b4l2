@@ -15,6 +15,7 @@
 | M5 出票核验 | 检查支付及票号一致 | `/api/m5` | `app/modules/m5_tickets/rules.py` `app/modules/m5_tickets/service.py` | `tests/test_m5_tickets.py` |
 | M6 渠道对账 | 核对渠道金额与悬单 | `/api/m6` | `app/modules/m6_reconcile/rules.py` `app/modules/m6_reconcile/service.py` | `tests/test_m6_reconcile.py` |
 | M7 补传复核 | 补传回放和版本复核 | `/api/m7` | `app/modules/m7_replay/rules.py` `app/modules/m7_replay/service.py` | `tests/test_m7_replay.py` |
+| M8 入账台账 | 代收分录幂等入账与中断恢复 | `/api/m8` `/api/posting/<run>/sync` | `app/modules/m8_posting/rules.py` `app/store.py` | `tests/test_m8_posting.py` |
 
 ## 陷阱登记
 
@@ -28,6 +29,10 @@
 | TRAP-14 | 同版冲突 | 覆盖或重复售卖 | 事件时间回放并保留隔离证据 | `app/modules/m2_seats/rules.py` | `tests/test_m2_seats.py::test_real_conflict` |
 | TRAP-23 | 过期端点 | 覆盖或重复售卖 | 事件时间回放并保留隔离证据 | `app/modules/m3_leases/rules.py` | `tests/test_m3_leases.py::test_expiration_endpoint_reusable` |
 | TRAP-26 | 陈旧复核 | 覆盖或重复售卖 | 事件时间回放并保留隔离证据 | `app/store.py` | `tests/test_m7_replay.py::test_stale_review` |
+| TRAP-31 | 代收凭据迟到 | 同号订单仓促认款给错单出票，或整批等凭据拖住已核实款 | 跨渠道代收款先挂待核不占归属位，凭据补齐转已归属；对账分列待核/已归属 | `app/modules/m4_payments/rules.py` | `tests/test_m8_agency.py::test_cross_channel_payment_pending_without_voucher` |
+| TRAP-32 | 重试重复记账 | 补证重试产生重复分录 | 分录以(批次,分录键)幂等，重试登记SKIP | `app/store.py::apply_ledger` | `tests/test_m8_posting.py::test_ledger_idempotent_retry` |
+| TRAP-33 | 入账中断 | 部分分录落库后失败，状态不一致 | 本批分录事务回滚并保留FAILED痕迹，重跑从断点恢复 | `app/store.py::apply_ledger` | `tests/test_m8_posting.py::test_ledger_resumes_after_interruption` |
+| TRAP-34 | 代收资金归属错位 | 出票渠道与收款渠道混淆 | 收款记代收渠道、出票认原售票渠道，出票核销同一笔款 | `app/modules/m5_tickets/rules.py` `app/modules/m6_reconcile/rules.py` | `tests/test_m8_posting.py::test_original_channel_issues_against_agency_money` |
 
 ## 对账规则
 

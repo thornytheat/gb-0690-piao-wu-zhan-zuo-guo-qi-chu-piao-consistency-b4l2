@@ -2,7 +2,7 @@ from app.reasons import rejected
 # Lease replay owns only holds/releases; payment and issue events are judged by later modules.
 def replay(rows,end):
     active={};leases=[];bad=[];retained=[]
-    priority={'release':0,'hold':1,'pay':2,'issue':3}
+    priority={'release':0,'hold':1,'voucher':2,'pay':3,'issue':4}
     for row in sorted(rows,key=lambda x:(x['time'],priority[x['type']],x['id'])):
         seat=row['seat'];current=active.get(seat)
         if current is not None and current['end']<=row['time']:active.pop(seat);current=None

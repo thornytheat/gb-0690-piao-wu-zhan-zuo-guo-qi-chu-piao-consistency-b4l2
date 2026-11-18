@@ -5,7 +5,7 @@ from app.manifest import make
 from app.normalize import serial
 from app.errors import DomainError
 from app import store
-def run(raw=None, params=None, stop=7, persist=True):
+def run(raw=None, params=None, stop=8, persist=True):
     if raw is None: raw=(SAMPLES/"dirty.csv").read_bytes()
     if isinstance(raw,str): raw=raw.encode("utf-8")
     if not isinstance(params,(dict,type(None))): raise DomainError("PARAMS","参数必须是对象")
@@ -17,5 +17,5 @@ def run(raw=None, params=None, stop=7, persist=True):
     ctx.pop("source",None);ctx.pop("raw",None)
     result=serial(ctx);result["manifest"]=make(raw,actual);result["elapsed_ms"]=round((perf_counter()-t)*1000,3)
     result["version"]=1;result["review"]="待复核"
-    if persist and stop==7: return store.save(result)
+    if persist and stop==8: return store.save(result)
     return result
